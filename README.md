@@ -59,11 +59,6 @@ pytest -q
 
 **Scaling path:** production telemetry can evolve toward a durable queue, asynchronous workers, partitioned time-series storage, cached aggregates and idempotent alert delivery.
 
-## Interview discussion
-Be prepared to explain performance ratio, temperature derating, normalized residuals, false-positive control, chronological ML validation, API validation, testing, and why a modular monolith is preferable to premature microservices.
-
-See `docs/ARCHITECTURE.md` and `docs/INTERVIEW_GUIDE.md`.
-
 ## Production roadmap
 PostgreSQL persistence, Alembic migrations, authentication/tenant authorization, weather-provider adapters, confidence intervals, plant-specific model calibration, observability, and deployment.
 
