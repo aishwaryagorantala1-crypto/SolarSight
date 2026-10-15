@@ -85,3 +85,8 @@ Sample data is synthetic, including a simulated midday fault. Performance score 
 The dashboard is published from `main` → `/docs`. Enable this in Settings → Pages → Deploy from a branch. The public demo runs entirely in the browser; the Python API is not hosted on GitHub Pages.
 
 To refresh the published version after frontend changes, run `cd frontend && npm ci && npm run build -- --base=/SolarSight/ --outDir ../docs`, then commit the updated `docs/index.html` and `docs/assets` files. Keep `docs/.nojekyll`.
+
+## Personal solar planner
+Visitors now start with a three-step bill, usage, and roof questionnaire. It calculates a panel-rounded system estimate, monthly generation, and potential bill reduction in rupees. Default rates and generation assumptions are editable examples; it does not promise a subsidy, financial return, or exact utility bill. Energy consumption is in kWh; system capacity is in kW. The results page shows the formula and links to the official rooftop solar portal. An animated solar scene respects reduced-motion preferences and has a pause control. Visitors can skip straight to the sample dashboard or reopen the planner.
+
+Run frontend calculation tests with `node --test frontend/tests/*.test.mjs` from the repository root.

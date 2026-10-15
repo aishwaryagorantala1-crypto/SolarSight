@@ -1,3 +1,5 @@
+import Planner from "./Planner";
+import { SolarPlan } from "./planModel";
 import { useMemo, useRef, useState } from "react";
 import {
   demoReadings,
@@ -124,11 +126,17 @@ function Chart({ rows, day }: { rows: Reading[]; day: boolean }) {
     </div>
   );
 }
-export default function App() {
+function Dashboard({
+  plan,
+  onRestart,
+}: {
+  plan: SolarPlan | null;
+  onRestart: () => void;
+}) {
   const [range, setRange] = useState(1),
-    [capacity, setCapacity] = useState(11.2),
+    [capacity, setCapacity] = useState(plan?.capacity ?? 11.2),
     [weather, setWeather] = useState(1),
-    [tariff, setTariff] = useState(8),
+    [tariff, setTariff] = useState(plan?.inputs.tariff || 8),
     [threshold, setThreshold] = useState(25),
     [uploaded, setUploaded] = useState<Reading[] | null>(null),
     [fileName, setFileName] = useState(""),
@@ -141,7 +149,10 @@ export default function App() {
   );
   const end = all[all.length - 1].timestamp.slice(0, 10);
   const start = Date.parse(end + "T00:00:00Z") - (range - 1) * 86400000;
-  const rows = useMemo(() => all.filter((r) => Date.parse(r.timestamp) >= start), [all, start]);
+  const rows = useMemo(
+    () => all.filter((r) => Date.parse(r.timestamp) >= start),
+    [all, start],
+  );
   const totals = summarize(rows);
   const chartRows = useMemo(() => {
     if (range === 1) return rows;
@@ -232,6 +243,25 @@ export default function App() {
             {uploaded ? "UPLOADED DATA" : "SAMPLE DATA · OCT 2026"}
           </span>
         </div>
+        {plan && (
+          <section className="personal-banner">
+            <div>
+              <strong>
+                Your solar estimate · {number(plan.capacity, 2)} kW
+              </strong>
+              <p>
+                {money(plan.inputs.bill)}/month current bill ·{" "}
+                {number(plan.units, 0)} units · estimated reduction{" "}
+                {money(plan.savings)}/month
+              </p>
+              <small>
+                The chart below is synthetic sample data sized to your plan, not
+                measured output or the monthly estimate above.
+              </small>
+            </div>
+            <button onClick={onRestart}>Edit my answers ↗</button>
+          </section>
+        )}
         <header>
           <div>
             <div className="eyebrow">SOLAR PERFORMANCE, MADE CLEAR</div>
@@ -362,8 +392,8 @@ export default function App() {
                 <input
                   aria-label="System capacity"
                   type="range"
-                  min="1"
-                  max="50"
+                  min="0"
+                  max={Math.max(50, plan?.capacity ?? 0)}
                   step=".1"
                   value={capacity}
                   disabled={!!uploaded}
@@ -556,6 +586,7 @@ export default function App() {
           </section>
         )}
         <footer>
+          <button onClick={onRestart}>Plan my solar system ↗</button>
           <span>
             ✳ SolarSight{" "}
             <span className="muted"> / Understand your energy.</span>
@@ -588,5 +619,25 @@ export default function App() {
         </footer>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  const [started, setStarted] = useState(false);
+  const [plan, setPlan] = useState<SolarPlan | null>(null);
+  return started ? (
+    <Dashboard plan={plan} onRestart={() => setStarted(false)} />
+  ) : (
+    <Planner
+      initial={plan}
+      onComplete={(p) => {
+        setPlan(p);
+        setStarted(true);
+      }}
+      onSkip={() => {
+        setPlan(null);
+        setStarted(true);
+      }}
+    />
   );
 }

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const code=ts.transpileModule(readFileSync(new URL('../src/planModel.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2020}}).outputText;
+const {calculatePlan}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const input={bill:3000,fixed:200,tariff:8,units:null,yieldPerDay:4,roof:null,credit:80};
+test('bill estimate respects fixed charges and rounded panel capacity',()=>{const r=calculatePlan(input);assert.equal(r.units,350);assert.equal(r.panels,6);assert.ok(Math.abs(r.capacity-3.3)<1e-10);assert.equal(r.savings,2240);assert.equal(r.remaining,760);assert.equal(r.annual,26880)});
+test('roof constraint including too-small roof',()=>{const r=calculatePlan({...input,roof:110});assert.equal(r.panels,2);assert.equal(r.roofLimited,true);assert.ok(r.savings<2240);const zero=calculatePlan({...input,roof:20});assert.equal(zero.capacity,0);assert.equal(zero.remaining,3000)});
+test('explicit consumption overrides estimated units and savings stay capped',()=>{const r=calculatePlan({...input,units:1000,credit:100});assert.equal(r.units,1000);assert.equal(r.savings,2800);assert.equal(r.remaining,200);assert.equal(calculatePlan({...input,credit:0}).savings,0)});
+test('invalid inputs rejected',()=>{for(const change of [{bill:0},{fixed:3000},{tariff:0},{units:-5},{roof:0},{yieldPerDay:0},{credit:101},{bill:NaN}])assert.throws(()=>calculatePlan({...input,...change}))});
