@@ -1,4 +1,9 @@
 # SolarSight ☀️
+
+[**Open the dashboard →**](https://aishwaryagorantala1-crypto.github.io/SolarSight/)
+
+I started SolarSight because of my work at SunSolar Power Systems. I wanted to make solar generation data easier to understand and help someone see whether their panels are producing as much energy as expected.
+
 **Full-stack solar energy analytics, forecasting, and anomaly-detection platform.**
 
 **Stack:** Python · FastAPI · Pydantic · React · TypeScript · Docker · pytest · GitHub Actions
@@ -75,3 +80,8 @@ The dashboard runs independently of the API: `cd frontend && npm install && npm 
 CSV columns: `timestamp,actual_kwh,expected_kwh`. Each row represents energy for an interval, with actual and expected energy covering the same interval. Use ISO timestamps including a timezone (for example `2026-10-30T12:00:00Z`), nonnegative numbers, and unique timestamps. Up to 10,000 rows / 2 MB. Use the downloadable sample as a template. CSV data is processed in browser memory and is cleared on reload. All dates use UTC. Week/month selectors look back from the latest date in the data; incomplete periods show only supplied readings.
 
 Sample data is synthetic, including a simulated midday fault. Performance score is actual/expected energy capped at 100, not a diagnosis. Estimated energy value assumes every generated kWh earns the entered tariff; it is not a utility bill prediction. Uploaded baselines are taken directly from the CSV.
+
+## GitHub Pages
+The dashboard is published from `main` → `/docs`. Enable this in Settings → Pages → Deploy from a branch. The public demo runs entirely in the browser; the Python API is not hosted on GitHub Pages.
+
+To refresh the published version after frontend changes, run `cd frontend && npm ci && npm run build -- --base=/SolarSight/ --outDir ../docs`, then commit the updated `docs/index.html` and `docs/assets` files. Keep `docs/.nojekyll`.
