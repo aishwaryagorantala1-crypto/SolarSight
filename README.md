@@ -63,3 +63,15 @@ pytest -q
 PostgreSQL persistence, Alembic migrations, authentication/tenant authorization, weather-provider adapters, confidence intervals, plant-specific model calibration, observability, and deployment.
 
 **Author:** Aishwarya Gorantala
+
+## Interactive dashboard (v2)
+The dashboard runs independently of the API: `cd frontend && npm install && npm run dev -- --host 0.0.0.0`. In Codespaces, open the forwarded port 5173. The existing FastAPI endpoints remain available separately for API experimentation.
+
+- Day/week/month charts with keyboard and pointer inspection.
+- Capacity and weather scenario controls, editable INR electricity value.
+- Local CSV analysis, threshold-based interval alerts, and CSV exports.
+- Explicit sample-data labels and a Data & methodology page with all formulas.
+
+CSV columns: `timestamp,actual_kwh,expected_kwh`. Each row represents energy for an interval, with actual and expected energy covering the same interval. Use ISO timestamps including a timezone (for example `2026-10-30T12:00:00Z`), nonnegative numbers, and unique timestamps. Up to 10,000 rows / 2 MB. Use the downloadable sample as a template. CSV data is processed in browser memory and is cleared on reload. All dates use UTC. Week/month selectors look back from the latest date in the data; incomplete periods show only supplied readings.
+
+Sample data is synthetic, including a simulated midday fault. Performance score is actual/expected energy capped at 100, not a diagnosis. Estimated energy value assumes every generated kWh earns the entered tariff; it is not a utility bill prediction. Uploaded baselines are taken directly from the CSV.

@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const source = ts.transpileModule(readFileSync(new URL('../src/analytics.ts', import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2020}}).outputText;
+const {parseCsv,summarize,demoReadings,expectedPower}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const header='timestamp,actual_kwh,expected_kwh\n';
+test('energy score and losses do not offset deficient intervals',()=>{const s=summarize([{actual:3,expected:4},{actual:5,expected:4}]);assert.equal(s.score,100);assert.equal(s.loss,1);assert.equal(s.actual,8);assert.equal(summarize([{actual:0,expected:0}]).score,null)});
+test('CSV validates values and normalizes timezone',()=>{const r=parseCsv(header+'2026-10-30T12:00:00+05:30,0,1');assert.equal(r[0].timestamp,'2026-10-30T06:30:00.000Z');assert.equal(r[0].actual,0);for(const line of ['2026-10-30T12:00:00Z,-1,2','2026-10-30T12:00:00Z,,2','invalid,1,2','2026-10-30T12:00:00,1,2'])assert.throws(()=>parseCsv(header+line));assert.throws(()=>parseCsv(header+'2026-10-30T12:00:00Z,1,2\n2026-10-30T12:00:00Z,2,3'))});
+test('demo produces 30 days and three fault intervals on final day',()=>{const r=demoReadings(11.2,1);assert.equal(r.length,720);assert.equal(r.slice(-24).filter(x=>x.expected>0&&x.actual/x.expected<.75).length,3);assert.equal(expectedPower(11.2,0,30),0);assert.ok(expectedPower(11.2,900,30)<=11.2)});
